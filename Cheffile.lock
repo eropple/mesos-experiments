@@ -1,0 +1,21 @@
+SITE
+  remote: http://community.opscode.com/api/v1
+  specs:
+    apt (2.3.10)
+    build-essential (2.0.4)
+    python (1.4.6)
+      build-essential (>= 0.0.0)
+      yum-epel (>= 0.0.0)
+    ubuntu (1.1.6)
+      apt (>= 0.0.0)
+    updatedb (0.1.0)
+    yum (3.2.2)
+    yum-epel (0.3.6)
+      yum (~> 3.0)
+
+DEPENDENCIES
+  apt (~> 2.3.8)
+  python (~> 1.4.6)
+  ubuntu (~> 1.1.6)
+  updatedb (>= 0)
+

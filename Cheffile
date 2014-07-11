@@ -1,0 +1,6 @@
+site 'http://community.opscode.com/api/v1'
+
+cookbook 'ubuntu', '~> 1.1.6'
+cookbook 'apt', '~> 2.3.8'
+cookbook 'python', '~> 1.4.6'
+cookbook 'updatedb'
