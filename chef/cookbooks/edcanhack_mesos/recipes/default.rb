@@ -37,9 +37,8 @@ remote_file "Marathon .tar.gz" do
 end
 bash "Installing Marathon" do
   code <<-ENDCODE
+  cd /opt
   tar xzvf /tmp/marathon.tar.gz
-  mv /tmp/marathon /opt/marathon
-  chown -R marathon /opt/marathon
   ENDCODE
 end
 cookbook_file "Adding Marathon upstart script" do
