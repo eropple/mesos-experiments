@@ -1,0 +1,12 @@
+# added by Chef; change in node['hosts']['network_mapping']
+
+127.0.0.1	localhost
+
+# The following lines are desirable for IPv6 capable hosts
+::1     localhost ip6-localhost ip6-loopback
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+
+<% node['hosts'].each do |name, ip| %>
+<%= ip %> <%= name %>
+<% end %>
