@@ -1,5 +1,6 @@
 include_recipe "ubuntu"
 include_recipe "python"
+include_recipe "hostname"
 
 case node[:platform]
 when "ubuntu"

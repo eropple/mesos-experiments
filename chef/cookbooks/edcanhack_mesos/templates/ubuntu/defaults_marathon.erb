@@ -1,2 +1,1 @@
-export ZK=<%= @zk_hosts %>/marathon
-export MASTER=<%= @zk_hosts %>/mesos
+export ZK=$(cat /etc/mesos/zk | sed 's/mesos/marathon')

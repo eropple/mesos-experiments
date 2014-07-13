@@ -3,11 +3,11 @@
 
 VAGRANTFILE_API_VERSION = "2"
 IP_PREFIX = ENV['MESOS_EXPERIMENTS_IP_PREFIX'] || "10.218.147"
-NUM_WORKERS = ENV['MESOS_EXPERIMENTS_NUM_WORKERS'] || 2
+NUM_WORKERS = ENV['MESOS_EXPERIMENTS_NUM_WORKERS'] || 1
 
 network_mapping = { "master" => "#{IP_PREFIX}.10" }
 (0...NUM_WORKERS).each do |i|
-  network_mapping["worker_" + i.to_s.rjust(2, "0")] = "#{IP_PREFIX}.#{(100 + i).to_s}"
+  network_mapping["worker-" + i.to_s.rjust(2, "0")] = "#{IP_PREFIX}.#{(100 + i).to_s}"
 end
 SHARED_JSON = {
   "hosts" => network_mapping,
@@ -22,6 +22,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.synced_folder './scripts', '/opt/scripts'
   
   config.vm.define "master" do |master|
+    master.vm.hostname = "master"
     master.vm.network "private_network", ip: network_mapping["master"]
     
     master.vm.network "forwarded_port", guest: 8080, host: 8080
@@ -36,14 +37,17 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       chef.add_recipe "edcanhack_mesos::mesos_master"
       chef.add_recipe "edcanhack_mesos::marathon"
       
-      chef.json = SHARED_JSON
+      chef.json = SHARED_JSON.merge({
+        "set_fqdn" => "master"
+      })
     end
   end
   
   (0...NUM_WORKERS).each do |i|
-    worker_name = "worker_" + i.to_s.rjust(2, "0")
+    worker_name = "worker-" + i.to_s.rjust(2, "0")
     
     config.vm.define worker_name do |worker|
+      worker.vm.hostname = worker_name
       worker.vm.network "private_network", ip: network_mapping[worker_name]
       
       worker.vm.provider "virtualbox" do |vbox|
@@ -54,7 +58,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         chef.cookbooks_path = [ "./chef/cookbooks", "./chef/librarian-cookbooks" ]
         chef.add_recipe "edcanhack_mesos::mesos_slave"
       
-        chef.json = SHARED_JSON
+        chef.json = SHARED_JSON.merge({
+          "set_fqdn" => worker_name
+        })
       end
     end
     
