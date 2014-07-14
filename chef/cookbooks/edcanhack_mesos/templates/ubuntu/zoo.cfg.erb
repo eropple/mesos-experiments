@@ -9,5 +9,5 @@ preAllocSize=65536
 leaderServes=yes
 
 <% node["hosts"].select { |k, v| node["masters"].include?(k) }.each do |k, v| %>
-server.<%= k.split("-")[1].to_i + 1 %>=<%= k %>:2888:3888
+server.<%= k.split("-")[1].to_i + 1 %>=<%= v %>:2888:3888
 <% end %>
