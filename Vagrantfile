@@ -4,14 +4,19 @@
 VAGRANTFILE_API_VERSION = "2"
 IP_PREFIX = ENV['MESOS_EXPERIMENTS_IP_PREFIX'] || "10.218.147"
 NUM_WORKERS = (ENV['MESOS_EXPERIMENTS_NUM_WORKERS'] || "1").to_i
+NUM_MASTERS = (ENV['MESOS_EXPERIMENTS_NUM_MASTERS'] || "1").to_i
 
-network_mapping = { "master" => "#{IP_PREFIX}.10" }
+network_mapping = { }
 (0...NUM_WORKERS).each do |i|
   network_mapping["worker-" + i.to_s.rjust(2, "0")] = "#{IP_PREFIX}.#{(100 + i).to_s}"
 end
+(0...NUM_MASTERS).each do |i|
+  network_mapping["master-" + i.to_s.rjust(2, "0")] = "#{IP_PREFIX}.#{(10 + i).to_s}"
+end
 SHARED_JSON = {
   "hosts" => network_mapping,
-  "masters" => [ "master" ]
+  "masters" => network_mapping.select { |k, v| k.start_with?("master") },
+  "zookeepers" => network_mapping.select { |k, v| k.start_with?("master") }
 }
 
   
@@ -21,25 +26,26 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.synced_folder '.', '/vagrant', disabled: true
   config.vm.synced_folder './scripts', '/opt/scripts'
   
-  config.vm.define "master" do |master|
-    master.vm.hostname = "master"
-    master.vm.network "private_network", ip: network_mapping["master"]
+  (0...NUM_MASTERS).each do |i|
+    master_name = "master-" + i.to_s.rjust(2, "0")
     
-    master.vm.network "forwarded_port", guest: 8080, host: 8080
-    master.vm.network "forwarded_port", guest: 5050, host: 5050
+    config.vm.define master_name do |master|
+      master.vm.hostname = master_name
+      master.vm.network "private_network", ip: network_mapping[master_name]
     
-    master.vm.provider "virtualbox" do |vbox|
-      vbox.customize ["modifyvm", :id, "--memory", 1024]
-    end
+      master.vm.provider "virtualbox" do |vbox|
+        vbox.customize ["modifyvm", :id, "--memory", 1024]
+      end
     
-    master.vm.provision "chef_solo" do |chef|
-      chef.cookbooks_path = [ "./chef/cookbooks", "./chef/librarian-cookbooks" ]
-      chef.add_recipe "edcanhack_mesos::mesos_master"
-      chef.add_recipe "edcanhack_mesos::marathon"
+      master.vm.provision "chef_solo" do |chef|
+        chef.cookbooks_path = [ "./chef/cookbooks", "./chef/librarian-cookbooks" ]
+        chef.add_recipe "edcanhack_mesos::mesos_master"
+        chef.add_recipe "edcanhack_mesos::marathon"
       
-      chef.json = SHARED_JSON.merge({
-        "set_fqdn" => "master"
-      })
+        chef.json = SHARED_JSON.merge({
+          "set_fqdn" => master_name
+        })
+      end
     end
   end
   

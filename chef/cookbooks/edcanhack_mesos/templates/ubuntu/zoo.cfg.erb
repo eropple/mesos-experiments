@@ -1,0 +1,13 @@
+tickTime=2000
+initLimit=10
+syncLimit=5
+dataDir=/var/lib/zookeeper
+clientPort=2181
+
+preAllocSize=65536
+
+leaderServes=yes
+
+<% node["hosts"].select { |k, v| node["masters"].include?(k) }.each_with_index do |(k, v), i| %>
+server.<%= i + 1 %>=<%= k %>:2181:2182
+<% end %>
