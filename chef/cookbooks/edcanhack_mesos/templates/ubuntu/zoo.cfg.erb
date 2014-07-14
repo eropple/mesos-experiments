@@ -8,6 +8,6 @@ preAllocSize=65536
 
 leaderServes=yes
 
-<% node["hosts"].select { |k, v| node["masters"].include?(k) }.each_with_index do |(k, v), i| %>
-server.<%= i + 1 %>=<%= k %>:2181:2182
+<% node["hosts"].select { |k, v| node["masters"].include?(k) }.each do |k, v| %>
+server.<%= k.split("-")[1].to_i + 1 %>=<%= k %>:2888:3888
 <% end %>
