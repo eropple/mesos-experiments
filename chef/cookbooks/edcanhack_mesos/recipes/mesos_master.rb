@@ -15,5 +15,5 @@ template "Zookeeper configs for HA" do
   path "/etc/zookeeper/conf/zoo.cfg"
 end
 bash "seeding Zookeeper myid file" do
-  code "ruby -e 'puts `hostname`.split("-")[1].to_i + 1' > /var/lib/zookeeper/myid"
+  code "ruby -e 'puts `hostname`.split(\"-\")[1].to_i + 1' > /var/lib/zookeeper/myid"
 end
